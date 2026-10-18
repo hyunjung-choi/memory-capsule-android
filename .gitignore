@@ -9,10 +9,6 @@
 
 # Android Studio
 /.idea/*
-!/.idea/.gitignore
-!/.idea/codeStyles/
-!/.idea/encodings.xml
-!/.idea/vcs.xml
 
 # Secrets
 local.properties
