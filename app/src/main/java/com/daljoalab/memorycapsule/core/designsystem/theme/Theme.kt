@@ -1,4 +1,4 @@
-package com.daljoalab.memorycapsule.ui.theme
+package com.daljoalab.memorycapsule.core.designsystem.theme
 
 import android.app.Activity
 import android.os.Build

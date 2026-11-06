@@ -1,4 +1,4 @@
-package com.daljoalab.memorycapsule.ui.theme
+package com.daljoalab.memorycapsule.core.designsystem.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
