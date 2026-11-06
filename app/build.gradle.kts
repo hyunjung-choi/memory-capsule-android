@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
@@ -6,6 +8,20 @@ plugins {
     alias(libs.plugins.room)
     alias(libs.plugins.kotlin.serialization)
 }
+
+// local.properties → 환경변수 순으로 값을 찾는다. (CI에서는 환경변수 사용)
+val localProperties = Properties().apply {
+    val file = rootProject.file("local.properties")
+    if (file.exists()) file.inputStream().use(::load)
+}
+
+fun localOrEnv(key: String): String? =
+    localProperties.getProperty(key) ?: providers.environmentVariable(key).orNull
+
+val baseUrl = localOrEnv("BASE_URL")
+    ?.trimEnd('/')
+    ?.plus("/")
+    ?: error("BASE_URL이 없습니다. local.properties에 BASE_URL을 추가하거나 환경변수로 설정하세요.")
 
 android {
     namespace = "com.daljoalab.memorycapsule"
@@ -21,6 +37,8 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField("String", "BASE_URL", "\"$baseUrl\"")
     }
 
     buildTypes {
@@ -37,6 +55,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
