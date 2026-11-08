@@ -13,6 +13,7 @@
 # Secrets
 local.properties
 secrets.properties
+google-services.json
 
 # Signing
 *.jks
