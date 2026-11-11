@@ -1,6 +1,6 @@
 ---
-name: 작업
-about: 리팩터링, 디자인, 빌드, 문서, 테스트 등 기능·버그가 아닌 작업
+name: Task
+about: Refactoring, design, build, docs, tests, and other work
 title: "chore: "
 labels: ''
 assignees: ''

@@ -1,6 +1,6 @@
 ---
-name: 버그
-about: 동작이 기대와 다를 때
+name: Bug
+about: Report something that is not working
 title: "fix: "
 labels: bug
 assignees: ''

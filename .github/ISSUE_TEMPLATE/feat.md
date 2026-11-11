@@ -1,6 +1,6 @@
 ---
-name: 기능
-about: 새 기능 구현
+name: Feature
+about: Add a new feature
 title: "feat: "
 labels: feat
 assignees: ''
