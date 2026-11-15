@@ -17,6 +17,7 @@ navigation = "2.10.2"
 kotlinxSerialization = "1.11.0"
 retrofit = "3.0.0"
 okhttp = "5.5.1"
+kotlinxCoroutines = "1.11.0"
 firebaseBom = "35.1.0"
 googleServices = "4.5.0"
 
@@ -61,6 +62,10 @@ retrofit-converter-kotlinx-serialization = { group = "com.squareup.retrofit2", n
 okhttp-bom = { group = "com.squareup.okhttp3", name = "okhttp-bom", version.ref = "okhttp" }
 okhttp = { group = "com.squareup.okhttp3", name = "okhttp" }
 okhttp-logging-interceptor = { group = "com.squareup.okhttp3", name = "logging-interceptor" }
+okhttp-mockwebserver = { group = "com.squareup.okhttp3", name = "mockwebserver3" }
+
+# Test
+kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "kotlinxCoroutines" }
 
 # Firebase
 firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
