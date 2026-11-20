@@ -1,6 +1,7 @@
 package com.daljoalab.memorycapsule.core.network
 
 import kotlinx.serialization.json.Json
+import okhttp3.Authenticator
 import okhttp3.Interceptor
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -30,12 +31,16 @@ internal object NetworkFactory {
         redactHeader("Authorization")
     }
 
-    fun okHttpClient(interceptors: List<Interceptor> = emptyList()): OkHttpClient =
+    fun okHttpClient(
+        interceptors: List<Interceptor> = emptyList(),
+        authenticator: Authenticator = Authenticator.NONE,
+    ): OkHttpClient =
         OkHttpClient.Builder()
             .connectTimeout(CONNECT_TIMEOUT_SECONDS, TimeUnit.SECONDS)
             .readTimeout(READ_TIMEOUT_SECONDS, TimeUnit.SECONDS)
             .writeTimeout(WRITE_TIMEOUT_SECONDS, TimeUnit.SECONDS)
             .apply { interceptors.forEach(::addInterceptor) }
+            .authenticator(authenticator)
             .build()
 
     fun retrofit(baseUrl: String, json: Json, okHttpClient: OkHttpClient): Retrofit =

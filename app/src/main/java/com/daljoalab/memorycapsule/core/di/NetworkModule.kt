@@ -2,6 +2,11 @@ package com.daljoalab.memorycapsule.core.di
 
 import com.daljoalab.memorycapsule.BuildConfig
 import com.daljoalab.memorycapsule.core.network.NetworkFactory
+import com.daljoalab.memorycapsule.core.network.auth.AuthInterceptor
+import com.daljoalab.memorycapsule.core.network.auth.FirebaseIdTokenProvider
+import com.daljoalab.memorycapsule.core.network.auth.IdTokenProvider
+import com.daljoalab.memorycapsule.core.network.auth.TokenAuthenticator
+import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -21,14 +26,27 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideOkHttpClient(): OkHttpClient = NetworkFactory.okHttpClient(
+    fun provideOkHttpClient(
+        authInterceptor: AuthInterceptor,
+        tokenAuthenticator: TokenAuthenticator,
+    ): OkHttpClient = NetworkFactory.okHttpClient(
         interceptors = buildList {
+            add(authInterceptor)
             if (BuildConfig.DEBUG) add(NetworkFactory.loggingInterceptor())
         },
+        authenticator = tokenAuthenticator,
     )
 
     @Provides
     @Singleton
     fun provideRetrofit(json: Json, okHttpClient: OkHttpClient): Retrofit =
         NetworkFactory.retrofit(BuildConfig.BASE_URL, json, okHttpClient)
+}
+
+@Module
+@InstallIn(SingletonComponent::class)
+interface AuthTokenModule {
+
+    @Binds
+    fun bindIdTokenProvider(impl: FirebaseIdTokenProvider): IdTokenProvider
 }
