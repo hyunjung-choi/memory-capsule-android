@@ -30,7 +30,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.daljoalab.memorycapsule.core.designsystem.component.ErrorText
 import com.daljoalab.memorycapsule.core.designsystem.component.LabeledTextField
-import com.daljoalab.memorycapsule.core.designsystem.component.MemoryCharacter
+import com.daljoalab.memorycapsule.core.designsystem.component.MemoryBird
 import com.daljoalab.memorycapsule.core.designsystem.component.MemoryScaffold
 import com.daljoalab.memorycapsule.core.designsystem.component.PrimaryButton
 import com.daljoalab.memorycapsule.core.designsystem.component.SecondaryButton
@@ -140,7 +140,7 @@ private fun NameStep(
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             SpeechBubble(text = "어떻게\n불러드릴까요?")
-            MemoryCharacter(size = 104.dp)
+            MemoryBird(size = 104.dp)
         }
         LabeledTextField(
             label = "이름",
