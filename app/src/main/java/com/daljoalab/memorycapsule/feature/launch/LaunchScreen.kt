@@ -16,7 +16,7 @@ import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.daljoalab.memorycapsule.core.designsystem.component.MemoryCharacter
+import com.daljoalab.memorycapsule.core.designsystem.component.MemoryBird
 import com.daljoalab.memorycapsule.core.designsystem.component.PrimaryButton
 import com.daljoalab.memorycapsule.core.designsystem.component.SpeechBubble
 import com.daljoalab.memorycapsule.core.designsystem.preview.ScreenPreviews
@@ -50,7 +50,7 @@ private fun LaunchScreen(
         ) {
             val failed = uiState as? LaunchUiState.Failed
             SpeechBubble(text = failed?.message ?: "잠시만 기다려 주세요")
-            MemoryCharacter(size = 180.dp)
+            MemoryBird(size = 180.dp)
             if (failed != null) {
                 PrimaryButton(text = "다시 해 보기", onClick = onRetry)
             }

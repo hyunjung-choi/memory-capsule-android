@@ -26,7 +26,11 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -40,10 +44,10 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.daljoalab.memorycapsule.core.designsystem.component.BirdExpression
 import com.daljoalab.memorycapsule.core.designsystem.component.CaptionBubble
-import com.daljoalab.memorycapsule.core.designsystem.component.CharacterMotion
 import com.daljoalab.memorycapsule.core.designsystem.component.KeepScreenOn
-import com.daljoalab.memorycapsule.core.designsystem.component.MemoryCharacter
+import com.daljoalab.memorycapsule.core.designsystem.component.MemoryBird
 import com.daljoalab.memorycapsule.core.designsystem.component.PrimaryButton
 import com.daljoalab.memorycapsule.core.designsystem.component.SecondaryButton
 import com.daljoalab.memorycapsule.core.designsystem.component.SpeechBubble
@@ -52,6 +56,7 @@ import com.daljoalab.memorycapsule.core.designsystem.theme.ChipBorder
 import com.daljoalab.memorycapsule.core.designsystem.theme.MemoryCapsuleTheme
 import com.daljoalab.memorycapsule.core.model.Reaction
 import com.daljoalab.memorycapsule.core.model.RiskLevel
+import kotlinx.coroutines.delay
 
 @Composable
 fun ConversationScreen(
@@ -151,12 +156,14 @@ internal fun ConversationScreen(
                 verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterVertically),
             ) {
                 SpeechBubble(text = uiState.bubbleText())
-                MemoryCharacter(
+                val (expression, intensity) = rememberBirdExpression(uiState.reaction)
+                MemoryBird(
                     size = phase.characterSize,
-                    motion = uiState.reaction.toMotion(),
+                    expression = expression,
+                    intensity = intensity,
                     speaking = phase == ConversationPhase.Answering,
-                    contentDescription = if (phase.canStart) "기억이와 이야기하기" else "기억이",
                     onClick = if (phase.canStart) onStart else null,
+                    contentDescription = if (phase.canStart) "기억이와 이야기하기" else "${expression.label} 표정의 기억이",
                 )
                 if (phase == ConversationPhase.Listening) {
                     ListeningLabel()
@@ -309,12 +316,26 @@ private fun String.lastLines(): String =
 
 private const val MAX_CAPTION_CHARS = 48
 
-private fun Reaction.toMotion(): CharacterMotion = when (this) {
-    Reaction.NEUTRAL -> CharacterMotion.CALM
-    Reaction.HAPPY -> CharacterMotion.JOYFUL
-    Reaction.EMPATHY -> CharacterMotion.GENTLE
-    Reaction.SURPRISED_HAPPY, Reaction.SURPRISED_CONCERN -> CharacterMotion.SURPRISED
+@Composable
+private fun rememberBirdExpression(reaction: Reaction): Pair<BirdExpression, Float> {
+    var shown by remember { mutableStateOf(BirdExpression.NEUTRAL to 1f) }
+    LaunchedEffect(reaction) {
+        shown = when (reaction) {
+            Reaction.NEUTRAL -> BirdExpression.NEUTRAL to 1f
+            Reaction.HAPPY -> BirdExpression.HAPPY to 1f
+            Reaction.EMPATHY -> BirdExpression.EMPATHY to 1f
+            Reaction.SURPRISED_HAPPY, Reaction.SURPRISED_CONCERN -> {
+                shown = BirdExpression.SURPRISED to SURPRISE_INTENSITY
+                delay(SURPRISE_MS)
+                if (reaction == Reaction.SURPRISED_CONCERN) BirdExpression.EMPATHY to 1f else BirdExpression.HAPPY to 1f
+            }
+        }
+    }
+    return shown
 }
+
+private const val SURPRISE_INTENSITY = 0.65f
+private const val SURPRISE_MS = 1_040L
 
 @ScreenPreviews
 @Composable

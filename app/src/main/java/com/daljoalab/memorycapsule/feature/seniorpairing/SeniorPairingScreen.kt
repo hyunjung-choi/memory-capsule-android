@@ -24,7 +24,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.daljoalab.memorycapsule.core.designsystem.component.InfoCard
 import com.daljoalab.memorycapsule.core.designsystem.component.KeepScreenOn
-import com.daljoalab.memorycapsule.core.designsystem.component.MemoryCharacter
+import com.daljoalab.memorycapsule.core.designsystem.component.MemoryBird
 import com.daljoalab.memorycapsule.core.designsystem.component.MemoryScaffold
 import com.daljoalab.memorycapsule.core.designsystem.component.PrimaryButton
 import com.daljoalab.memorycapsule.core.designsystem.component.SecondaryButton
@@ -93,7 +93,7 @@ private fun SeniorPairingScreen(
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             SpeechBubble(text = uiState.bubbleText())
-            MemoryCharacter(size = 104.dp)
+            MemoryBird(size = 104.dp)
         }
         when (uiState) {
             SeniorPairingUiState.NeedsConsent -> InfoCard(
