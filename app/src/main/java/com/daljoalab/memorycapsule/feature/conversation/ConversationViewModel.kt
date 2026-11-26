@@ -54,6 +54,7 @@ class ConversationViewModel @Inject constructor(
     private val allOutput = StringBuilder()
     private val openTurn = StringBuilder()
     private var openTurnStartMs = 0L
+    private var openTurnEndMs = 0L
     private var openTurnLastDeltaMs = 0L
     private var lastInputDeltaStartMs: Long? = null
     private var answerStartedDuringTurn = false
@@ -144,10 +145,10 @@ class ConversationViewModel @Inject constructor(
             is LiveEvent.UsageUpdated -> usageSeconds = event.seconds
             is LiveEvent.Closed -> {
                 event.usageSeconds?.let { usageSeconds = it }
-                onConnectionEnded()
+                onConnectionEnded("session.closed reason=${event.reason}")
             }
 
-            LiveEvent.Disconnected -> onConnectionEnded()
+            is LiveEvent.Disconnected -> onConnectionEnded(event.cause.name)
         }
     }
 
@@ -162,8 +163,10 @@ class ConversationViewModel @Inject constructor(
         }
     }
 
-    private fun onConnectionEnded() {
-        when (_uiState.value.phase) {
+    private fun onConnectionEnded(cause: String) {
+        val phase = _uiState.value.phase
+        if (BuildConfig.DEBUG) Log.i(TAG, "음성 연결 종료: $cause (phase=$phase)")
+        when (phase) {
             ConversationPhase.Closing -> finish()
             ConversationPhase.Listening, ConversationPhase.Answering -> {
                 endReason = SessionEndReason.ERROR
@@ -186,6 +189,7 @@ class ConversationViewModel @Inject constructor(
         openTurn.appendSeparated(event.text, separate = paused)
         allInput.appendSeparated(event.text, separate = paused || newTurn)
         openTurnLastDeltaMs = elapsedMs()
+        openTurnEndMs = event.endMs ?: event.startMs ?: openTurnLastDeltaMs
         _uiState.update {
             it.copy(
                 phase = ConversationPhase.Listening,
@@ -215,19 +219,20 @@ class ConversationViewModel @Inject constructor(
         lastOutputAtMs = now
         allOutput.appendSeparated(event.text, separate = newAnswer)
 
-        val elapsed = elapsedMs()
+        val startMs = event.startMs ?: elapsedMs()
+        val endMs = event.endMs ?: startMs
         val last = outputLines.lastOrNull()
         if (newAnswer || last == null) {
             outputLines += TranscriptLine(
                 TranscriptDirection.OUTPUT,
                 null,
                 event.text,
-                elapsed,
-                elapsed
+                startMs,
+                endMs
             )
         } else {
             outputLines[outputLines.lastIndex] =
-                last.copy(text = last.text + event.text, endMs = elapsed)
+                last.copy(text = last.text + event.text, endMs = endMs)
         }
 
         _uiState.update {
@@ -259,7 +264,7 @@ class ConversationViewModel @Inject constructor(
 
         val startMs = openTurnStartMs.coerceAtLeast(0)
         val utterance =
-            Utterance(text, startMs, (endMs ?: openTurnLastDeltaMs).coerceAtLeast(startMs))
+            Utterance(text, startMs, (endMs ?: openTurnEndMs).coerceAtLeast(startMs))
         turnCount += 1
         val utteranceId = String.format(Locale.ROOT, "u_%04d", turnCount)
         inputLines += TranscriptLine(
@@ -342,7 +347,10 @@ class ConversationViewModel @Inject constructor(
                     reason = endReason,
                     durationSec = durationSec,
                     usageSeconds = usageSeconds,
-                    transcript = (inputLines + outputLines).sortedBy { it.startMs },
+                    transcript = (inputLines + outputLines)
+                        .map { it.copy(text = it.text.trim()) }
+                        .filter { it.text.isNotEmpty() }
+                        .sortedBy { it.startMs },
                 )
             }
             _uiState.update { it.copy(phase = ConversationPhase.Finished(result?.cardsCreated)) }
@@ -366,6 +374,7 @@ class ConversationViewModel @Inject constructor(
         allInput.clear()
         allOutput.clear()
         openTurn.clear()
+        openTurnEndMs = 0L
         openTurnLastDeltaMs = 0L
         lastInputDeltaStartMs = null
         answerStartedDuringTurn = false
