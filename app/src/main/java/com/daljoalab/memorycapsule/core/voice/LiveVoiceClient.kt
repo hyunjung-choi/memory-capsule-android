@@ -150,7 +150,9 @@ class LiveVoiceClient @Inject constructor(
         }
 
         override fun onConnectionChange(state: PeerConnection.PeerConnectionState) {
-            if (state == PeerConnection.PeerConnectionState.FAILED) _events.tryEmit(LiveEvent.Disconnected)
+            if (state == PeerConnection.PeerConnectionState.FAILED) {
+                _events.tryEmit(LiveEvent.Disconnected(LiveEvent.Disconnected.Cause.CONNECTION_FAILED))
+            }
         }
 
         override fun onSignalingChange(state: PeerConnection.SignalingState) = Unit
@@ -176,7 +178,9 @@ class LiveVoiceClient @Inject constructor(
         }
 
         override fun onStateChange() {
-            if (channel.state() == DataChannel.State.CLOSED) _events.tryEmit(LiveEvent.Disconnected)
+            if (channel.state() == DataChannel.State.CLOSED) {
+                _events.tryEmit(LiveEvent.Disconnected(LiveEvent.Disconnected.Cause.CHANNEL_CLOSED))
+            }
         }
 
         override fun onBufferedAmountChange(previousAmount: Long) = Unit

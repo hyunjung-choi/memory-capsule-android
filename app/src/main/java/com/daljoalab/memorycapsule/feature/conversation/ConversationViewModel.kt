@@ -145,10 +145,10 @@ class ConversationViewModel @Inject constructor(
             is LiveEvent.UsageUpdated -> usageSeconds = event.seconds
             is LiveEvent.Closed -> {
                 event.usageSeconds?.let { usageSeconds = it }
-                onConnectionEnded()
+                onConnectionEnded("session.closed reason=${event.reason}")
             }
 
-            LiveEvent.Disconnected -> onConnectionEnded()
+            is LiveEvent.Disconnected -> onConnectionEnded(event.cause.name)
         }
     }
 
@@ -163,8 +163,10 @@ class ConversationViewModel @Inject constructor(
         }
     }
 
-    private fun onConnectionEnded() {
-        when (_uiState.value.phase) {
+    private fun onConnectionEnded(cause: String) {
+        val phase = _uiState.value.phase
+        if (BuildConfig.DEBUG) Log.i(TAG, "음성 연결 종료: $cause (phase=$phase)")
+        when (phase) {
             ConversationPhase.Closing -> finish()
             ConversationPhase.Listening, ConversationPhase.Answering -> {
                 endReason = SessionEndReason.ERROR

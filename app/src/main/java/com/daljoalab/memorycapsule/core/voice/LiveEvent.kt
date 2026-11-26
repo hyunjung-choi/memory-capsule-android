@@ -13,7 +13,7 @@ sealed interface LiveEvent {
 
     data object Started : LiveEvent
 
-    data class Closed(val usageSeconds: Double?) : LiveEvent
+    data class Closed(val usageSeconds: Double?, val reason: String?) : LiveEvent
 
     data class InputDelta(
         val eventId: String?,
@@ -33,14 +33,16 @@ sealed interface LiveEvent {
 
     data class UsageUpdated(val seconds: Double) : LiveEvent
 
-    data object Disconnected : LiveEvent
+    data class Disconnected(val cause: Cause) : LiveEvent {
+        enum class Cause { CONNECTION_FAILED, CHANNEL_CLOSED }
+    }
 }
 
 internal fun Json.parseLiveEvent(text: String): LiveEvent? {
     val event = runCatching { parseToJsonElement(text).jsonObject }.getOrNull() ?: return null
     return when (event.string("type")) {
         "session.started" -> LiveEvent.Started
-        "session.closed" -> LiveEvent.Closed(event.usageSeconds())
+        "session.closed" -> LiveEvent.Closed(event.usageSeconds(), event.string("reason"))
         "session.input_transcript.delta" -> event.string("delta")
             ?.takeIf { it.isNotEmpty() }
             ?.let {

@@ -40,10 +40,12 @@ class LiveEventTest {
     }
 
     @Test
-    fun `종료 이벤트에서 최종 사용량을 읽는다`() {
-        val event = json.parseLiveEvent("""{"type":"session.closed","usage":{"seconds":23}}""")
+    fun `종료 이벤트에서 최종 사용량과 종료 이유를 읽는다`() {
+        val event = json.parseLiveEvent(
+            """{"type":"session.closed","reason":"close_requested","usage":{"seconds":23}}""",
+        )
 
-        assertEquals(LiveEvent.Closed(23.0), event)
+        assertEquals(LiveEvent.Closed(23.0, "close_requested"), event)
     }
 
     @Test
