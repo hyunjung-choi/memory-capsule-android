@@ -15,11 +15,21 @@ sealed interface LiveEvent {
 
     data class Closed(val usageSeconds: Double?) : LiveEvent
 
-    data class InputDelta(val eventId: String?, val text: String, val startMs: Long?) : LiveEvent
+    data class InputDelta(
+        val eventId: String?,
+        val text: String,
+        val startMs: Long?,
+        val endMs: Long?,
+    ) : LiveEvent
 
     data class InputDone(val startMs: Long?, val endMs: Long?) : LiveEvent
 
-    data class OutputDelta(val eventId: String?, val text: String) : LiveEvent
+    data class OutputDelta(
+        val eventId: String?,
+        val text: String,
+        val startMs: Long?,
+        val endMs: Long?,
+    ) : LiveEvent
 
     data class UsageUpdated(val seconds: Double) : LiveEvent
 
@@ -33,12 +43,16 @@ internal fun Json.parseLiveEvent(text: String): LiveEvent? {
         "session.closed" -> LiveEvent.Closed(event.usageSeconds())
         "session.input_transcript.delta" -> event.string("delta")
             ?.takeIf { it.isNotEmpty() }
-            ?.let { LiveEvent.InputDelta(event.string("event_id"), it, event.millis("start_ms")) }
+            ?.let {
+                LiveEvent.InputDelta(event.string("event_id"), it, event.millis("start_ms"), event.millis("end_ms"))
+            }
         "session.input_transcript.done", "session.input_transcript.completed" ->
             LiveEvent.InputDone(event.millis("start_ms"), event.millis("end_ms"))
         "session.output_transcript.delta" -> event.string("delta")
             ?.takeIf { it.isNotEmpty() }
-            ?.let { LiveEvent.OutputDelta(event.string("event_id"), it) }
+            ?.let {
+                LiveEvent.OutputDelta(event.string("event_id"), it, event.millis("start_ms"), event.millis("end_ms"))
+            }
         "session.usage.updated" -> event.usageSeconds()?.let(LiveEvent::UsageUpdated)
         else -> null
     }
