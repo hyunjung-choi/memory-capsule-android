@@ -1,0 +1,45 @@
+package com.daljoalab.memorycapsule.core.voice
+
+import kotlinx.serialization.json.Json
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
+import org.junit.Test
+
+class LiveEventTest {
+
+    private val json = Json { ignoreUnknownKeys = true }
+
+    @Test
+    fun `입력 자막 조각의 실수 시각을 밀리초로 반올림한다`() {
+        val event = json.parseLiveEvent(
+            """{"type":"session.input_transcript.delta","event_id":"e1","delta":"안녕","start_ms":1200.6}""",
+        )
+
+        assertEquals(LiveEvent.InputDelta("e1", "안녕", 1201), event)
+    }
+
+    @Test
+    fun `시각이 없으면 null로 둔다`() {
+        val event = json.parseLiveEvent("""{"type":"session.input_transcript.done"}""")
+
+        assertEquals(LiveEvent.InputDone(null, null), event)
+    }
+
+    @Test
+    fun `빈 답변 자막 조각은 무시한다`() {
+        assertNull(json.parseLiveEvent("""{"type":"session.output_transcript.delta","delta":""}"""))
+    }
+
+    @Test
+    fun `종료 이벤트에서 최종 사용량을 읽는다`() {
+        val event = json.parseLiveEvent("""{"type":"session.closed","usage":{"seconds":23}}""")
+
+        assertEquals(LiveEvent.Closed(23.0), event)
+    }
+
+    @Test
+    fun `모르는 이벤트와 깨진 JSON은 무시한다`() {
+        assertNull(json.parseLiveEvent("""{"type":"session.something_new"}"""))
+        assertNull(json.parseLiveEvent("not json"))
+    }
+}
